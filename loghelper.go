@@ -1,8 +1,8 @@
-package loghelper
+package gologhelper
 
 import (
-	consolehelper "github.com/yingying0708/loghelper/ConsoleLogPrint"
-	filehelper "github.com/yingying0708/loghelper/FileLogPrint"
+	consolehelper "github.com/yingying0708/gologhelper/ConsoleLogPrint"
+	filehelper "github.com/yingying0708/gologhelper/FileLogPrint"
 	"strings"
 	"time"
 

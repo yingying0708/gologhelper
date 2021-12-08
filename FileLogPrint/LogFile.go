@@ -1,4 +1,4 @@
-package loghelper
+package gologhelper
 
 import (
 	"encoding/json"
