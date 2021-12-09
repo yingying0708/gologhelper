@@ -20,10 +20,11 @@ type LogFile struct {
 	FuncName string      `json:"funcName"`
 	Log_Time string      `json:"log_time"`
 	HOSTNAME string      `json:"hostname"`
+	Level    string      `json:"level"`
 	Msg      interface{} `json:"msg"`
 }
 
-func PrintLogFile(writer *rotatelogs.RotateLogs, appname string, msg interface{}, log *logrus.Logger) {
+func PrintLogFile(writer *rotatelogs.RotateLogs, appname, level string, msg interface{}, log *logrus.Logger) {
 	pc, file, line, _ := runtime.Caller(2)
 	f := runtime.FuncForPC(pc)
 	hostname, err := os.Hostname()
@@ -35,6 +36,7 @@ func PrintLogFile(writer *rotatelogs.RotateLogs, appname string, msg interface{}
 	log_time := time.Now().Format("2006-01-02 15:04:05")
 
 	entity := LogFile{
+		Level:    level,
 		File:     file,
 		FuncName: funcName,
 		LineNo:   line,
