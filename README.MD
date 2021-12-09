@@ -3,6 +3,7 @@
 
 ## 核心技术及组件
 logrus v1.8.1
+
 file-rotatelogs v2.4.0+incompatible
 
 ## 获取
