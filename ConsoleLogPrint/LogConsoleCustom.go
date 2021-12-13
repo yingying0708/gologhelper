@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func PrintLogConsoleCustom(appname, level string, fields map[string]interface{}, log *logrus.Logger) {
+func PrintLogConsoleCustom(appname, level string,msg interface{}, fields map[string]interface{}, log *logrus.Logger) {
 	if len(fields) > 0 {
 		pc, file, line, _ := runtime.Caller(2)
 		f := runtime.FuncForPC(pc)
@@ -26,6 +26,6 @@ func PrintLogConsoleCustom(appname, level string, fields map[string]interface{},
 			"log_time": time.Now().Format("2006-01-02 15:04:05"),
 			"HOSTNAME": hostname,
 			"level":    level,
-		}).Println()
+		}).Println(msg)
 	}
 }

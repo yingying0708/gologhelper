@@ -1,6 +1,7 @@
 package gologhelper
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 
@@ -146,49 +147,81 @@ func (log *LogHelper) SetBackupCount(backupCount int) *LogHelper {
 	return log
 }
 
-func (log *LogHelper) Info(msg interface{}) {
-	if GetLogLevel(log.LogLevel) <= Log_Info {
-		if log.ConsolePrint {
-			consolehelper.PrintLogConsole(log.AppName, "info", msg, logs)
-		}
-		filehelper.PrintLogFile(log.InfoWriter, log.AppName, "info", msg, logs)
+//Trace
+func (log *LogHelper) Trace(param ...interface{}) {
+	msg, extra := getParams(param...)
+	if msg != nil && extra != nil {
+		log.traceCustom(msg, extra)
+	} else {
+		log.trace(msg)
 	}
 }
 
-func (log *LogHelper) Trace(msg interface{}) {
-	if GetLogLevel(log.LogLevel) <= Log_Trace {
-		if log.ConsolePrint {
-			consolehelper.PrintLogConsole(log.AppName, "trace", msg, logs)
-		}
-		filehelper.PrintLogFile(log.TraceWriter, log.AppName, "trace", msg, logs)
+//Debug
+func (log *LogHelper) Debug(param ...interface{}) {
+	msg, extra := getParams(param...)
+	if msg != nil && extra != nil {
+		log.debugCustom(msg, extra)
+	} else {
+		log.debug(msg)
 	}
 }
 
-func (log *LogHelper) Debug(msg interface{}) {
-	if GetLogLevel(log.LogLevel) <= Log_Debug {
-		if log.ConsolePrint {
-			consolehelper.PrintLogConsole(log.AppName, "debug", msg, logs)
-		}
-		filehelper.PrintLogFile(log.DebugWriter, log.AppName, "debug", msg, logs)
+//Info
+func (log *LogHelper) Info(param ...interface{}) {
+	msg, extra := getParams(param...)
+	if msg != nil && extra != nil {
+		log.infoCustom(msg, extra)
+	} else {
+		log.info(msg)
 	}
 }
 
-func (log *LogHelper) Warn(msg interface{}) {
-	if GetLogLevel(log.LogLevel) <= Log_Warn {
-		if log.ConsolePrint {
-			consolehelper.PrintLogConsole(log.AppName, "warn", msg, logs)
-		}
-		filehelper.PrintLogFile(log.WarnWriter, log.AppName, "warn", msg, logs)
+//Warn
+func (log *LogHelper) Warn(param ...interface{}) {
+	msg, extra := getParams(param...)
+	if msg != nil && extra != nil {
+		log.warnCustom(msg, extra)
+	} else {
+		log.warn(msg)
 	}
 }
 
-func (log *LogHelper) Error(msg interface{}) {
-	if GetLogLevel(log.LogLevel) <= Log_Error {
-		if log.ConsolePrint {
-			consolehelper.PrintLogConsole(log.AppName, "error", msg, logs)
-		}
-		filehelper.PrintLogFile(log.ErrorWriter, log.AppName, "error", msg, logs)
+//Error
+func (log *LogHelper) Error(param ...interface{}) {
+	msg, extra := getParams(param...)
+	if msg != nil && extra != nil {
+		log.errorCustom(msg, extra)
+	} else {
+		log.error(msg)
 	}
+}
+
+//拆分参数
+func getParams(param ...interface{}) (interface{}, map[string]interface{}) {
+	var msg interface{}
+	if len(param) == 1 {
+		msg = param[0]
+		return msg, nil
+	}
+	if len(param) == 2 {
+		var mapResult map[string]interface{}
+		msg = param[0]
+		p1 := param[1]
+		if extra, ok := p1.(string); ok {
+			//判断extra的前几位是不是extra={}
+			prefix := extra[0:6]
+			if prefix == "extra=" {
+				jsonContent := extra[6:]
+				if err := json.Unmarshal([]byte(jsonContent), &mapResult); err != nil {
+					mapResult = make(map[string]interface{}, 1)
+					mapResult["error_msg"] = "extra数据格式错误"
+				}
+			}
+		}
+		return msg, mapResult
+	}
+	return nil, nil
 }
 
 //实例化rotatelogs.RotateLogs
@@ -216,47 +249,92 @@ func getWriter(logPath, When string, backupCount int) *rotatelogs.RotateLogs {
 	return writer
 }
 
-func (log *LogHelper) InfoCustom(fields map[string]interface{}) {
+func (log *LogHelper) info(msg interface{}) {
 	if GetLogLevel(log.LogLevel) <= Log_Info {
 		if log.ConsolePrint {
-			consolehelper.PrintLogConsoleCustom(log.AppName,"info", fields, logs)
+			consolehelper.PrintLogConsole(log.AppName, "INFO", msg, logs)
 		}
-		filehelper.PrintLogFileCustom(log.InfoWriter, log.AppName, "info", fields, logs)
+		filehelper.PrintLogFile(log.InfoWriter, log.AppName, "INFO", msg, logs)
 	}
 }
 
-func (log *LogHelper) TraceCustom(fields map[string]interface{}) {
+func (log *LogHelper) trace(msg interface{}) {
 	if GetLogLevel(log.LogLevel) <= Log_Trace {
 		if log.ConsolePrint {
-			consolehelper.PrintLogConsoleCustom(log.AppName,"trace",  fields, logs)
+			consolehelper.PrintLogConsole(log.AppName, "TRACE", msg, logs)
 		}
-		filehelper.PrintLogFileCustom(log.TraceWriter, log.AppName, "trace", fields, logs)
+		filehelper.PrintLogFile(log.TraceWriter, log.AppName, "TRACE", msg, logs)
 	}
 }
 
-func (log *LogHelper) DebugCustom(fields map[string]interface{}) {
+func (log *LogHelper) debug(msg interface{}) {
 	if GetLogLevel(log.LogLevel) <= Log_Debug {
 		if log.ConsolePrint {
-			consolehelper.PrintLogConsoleCustom(log.AppName, "debug",fields, logs)
+			consolehelper.PrintLogConsole(log.AppName, "DEBUG", msg, logs)
 		}
-		filehelper.PrintLogFileCustom(log.DebugWriter, log.AppName, "debug", fields, logs)
+		filehelper.PrintLogFile(log.DebugWriter, log.AppName, "DEBUG", msg, logs)
 	}
 }
 
-func (log *LogHelper) WarnCustom(fields map[string]interface{}) {
+func (log *LogHelper) warn(msg interface{}) {
 	if GetLogLevel(log.LogLevel) <= Log_Warn {
 		if log.ConsolePrint {
-			consolehelper.PrintLogConsoleCustom(log.AppName, "warn", fields, logs)
+			consolehelper.PrintLogConsole(log.AppName, "WARN", msg, logs)
 		}
-		filehelper.PrintLogFileCustom(log.WarnWriter, log.AppName, "warn", fields, logs)
+		filehelper.PrintLogFile(log.WarnWriter, log.AppName, "WARN", msg, logs)
 	}
 }
 
-func (log *LogHelper) ErrorCustom(fields map[string]interface{}) {
+func (log *LogHelper) error(msg interface{}) {
 	if GetLogLevel(log.LogLevel) <= Log_Error {
 		if log.ConsolePrint {
-			consolehelper.PrintLogConsoleCustom(log.AppName, "error", fields, logs)
+			consolehelper.PrintLogConsole(log.AppName, "ERROR", msg, logs)
 		}
-		filehelper.PrintLogFileCustom(log.ErrorWriter, log.AppName, "error", fields, logs)
+		filehelper.PrintLogFile(log.ErrorWriter, log.AppName, "ERROR", msg, logs)
+	}
+}
+
+func (log *LogHelper) infoCustom(msg interface{}, fields map[string]interface{}) {
+	if GetLogLevel(log.LogLevel) <= Log_Info {
+		if log.ConsolePrint {
+			consolehelper.PrintLogConsoleCustom(log.AppName, "INFO", msg, fields, logs)
+		}
+		filehelper.PrintLogFileCustom(log.InfoWriter, log.AppName, "INFO", msg, fields, logs)
+	}
+}
+
+func (log *LogHelper) traceCustom(msg interface{}, fields map[string]interface{}) {
+	if GetLogLevel(log.LogLevel) <= Log_Trace {
+		if log.ConsolePrint {
+			consolehelper.PrintLogConsoleCustom(log.AppName, "TRACE", msg, fields, logs)
+		}
+		filehelper.PrintLogFileCustom(log.TraceWriter, log.AppName, "TRACE", msg, fields, logs)
+	}
+}
+
+func (log *LogHelper) debugCustom(msg interface{}, fields map[string]interface{}) {
+	if GetLogLevel(log.LogLevel) <= Log_Debug {
+		if log.ConsolePrint {
+			consolehelper.PrintLogConsoleCustom(log.AppName, "DEBUG", msg, fields, logs)
+		}
+		filehelper.PrintLogFileCustom(log.DebugWriter, log.AppName, "DEBUG", msg, fields, logs)
+	}
+}
+
+func (log *LogHelper) warnCustom(msg interface{}, fields map[string]interface{}) {
+	if GetLogLevel(log.LogLevel) <= Log_Warn {
+		if log.ConsolePrint {
+			consolehelper.PrintLogConsoleCustom(log.AppName, "WARN", msg, fields, logs)
+		}
+		filehelper.PrintLogFileCustom(log.WarnWriter, log.AppName, "WARN", msg, fields, logs)
+	}
+}
+
+func (log *LogHelper) errorCustom(msg interface{}, fields map[string]interface{}) {
+	if GetLogLevel(log.LogLevel) <= Log_Error {
+		if log.ConsolePrint {
+			consolehelper.PrintLogConsoleCustom(log.AppName, "ERROR", msg, fields, logs)
+		}
+		filehelper.PrintLogFileCustom(log.ErrorWriter, log.AppName, "ERROR", msg, fields, logs)
 	}
 }
