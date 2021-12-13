@@ -9,15 +9,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func PrintLogConsole(appname, level string, msg interface{}, log *logrus.Logger) {
-	if msg != "" {
+func PrintLogConsoleCustom(appname, level string, fields map[string]interface{}, log *logrus.Logger) {
+	if len(fields) > 0 {
 		pc, file, line, _ := runtime.Caller(2)
 		f := runtime.FuncForPC(pc)
 		hostname, err := os.Hostname()
 		if err != nil {
 			log.Println("获取hostname失败")
 		}
-		log.WithFields(logrus.Fields{
+		log.WithFields(fields).WithFields(logrus.Fields{
 			"file":     file,
 			"lineno":   line,
 			"app_name": appname,
@@ -26,6 +26,6 @@ func PrintLogConsole(appname, level string, msg interface{}, log *logrus.Logger)
 			"log_time": time.Now().Format("2006-01-02 15:04:05"),
 			"HOSTNAME": hostname,
 			"level":    level,
-		}).Println(msg)
+		}).Println()
 	}
 }
