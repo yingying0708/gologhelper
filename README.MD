@@ -14,14 +14,9 @@ log := gologhelper.GetLogHelper("项目名称", "日志路径").SetConsolePrint(
 
 log.Info("info")
 
-## 自定义调用
-msg := make(map[string]interface{}, 10)
+extra := `extra={"www":"0009","key_name":"其他想打印到日志里的信息"}`
 
-msg["test01"] = "0001"
-
-msg["test02"] = "{'www':'0009'}"
-
-log.InfoCustom(msg)
+log.Error("error", extra)
 
 ## 方法介绍
 SetConsolePrint(true)  控制台打印，默认是false
